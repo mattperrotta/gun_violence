@@ -1,0 +1,50 @@
+---
+title: "Understanding Gun Violence"
+author: "Matthew Perrotta"
+date: "11/7/2019"
+output: html_document
+---
+
+This exercise will serve two purposes: 1) Parse through gun violence data to better understand underlying factors and 2) to build an adequate regression models using common model selection methods.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+### Load Libraries
+```{r}
+library(tidyverse)
+```
+
+# Reading and Cleaning Data
+
+Reading in the .csv file:
+```{r}
+gv_data = read.csv('./data/gun-violence-data_01-2013_03-2018.csv') %>% 
+  janitor::clean_names()
+
+head(gv_data)
+
+length(unique(gv_data$incident_id)) == nrow(gv_data)
+```
+
+The dataset `gv_data` consists of `r nrow(gv_data)` observations and `r ncol(gv_data)` columns. Looking at the data, it seems that there a many variables that can be removed right away, such as `source_url`, because they provide no useful information. It should also be noted that many of the variables are of `factor` type, when they should either be `character` or `numeric`.
+
+```{r}
+gv_clean = gv_data %>% 
+  select(-c(address, incident_url:incident_url_fields_missing, location_description, notes, participant_name, sources)) %>% 
+  separate(date, into = c('year', 'month', 'day'), sep = '-') %>% 
+  mutate(year = as.factor(year),
+         month = as.factor(month),
+         day = as.numeric(day),
+         state = as.character(state),
+         city_or_county = as.character(city_or_county),
+         gun_stolen = as.character(gun_stolen),
+         gun_type = as.character(gun_type)
+         )
+
+head(gv_clean)
+```
+

@@ -25,13 +25,27 @@ Reading in the .csv file:
 gv_data = read.csv('./data/gun-violence-data_01-2013_03-2018.csv') %>% 
   janitor::clean_names()
 
-head(gv_data)
+str(gv_data)
 
 length(unique(gv_data$incident_id)) == nrow(gv_data)
 ```
 
-The dataset `gv_data` consists of `r nrow(gv_data)` observations and `r ncol(gv_data)` columns. Looking at the data, it seems that there a many variables that can be removed right away, such as `source_url`, because they provide no useful information. It should also be noted that many of the variables are of `factor` type, when they should either be `character` or `numeric`.
+The dataset `gv_data` consists of `r nrow(gv_data)` observations and `r ncol(gv_data)` columns. Looking at the data, it seems that there a many variables that can be removed right away, such as `source_url`, as they provide no useful information. It should also be noted that many of the variables are categorized as `factor`, when they should either be `character` or `numeric`.
 
+Changing `factor` variables to `character`.
+```{r}
+fctr.names = gv_data %>% 
+  select_if(is.factor) %>% 
+  colnames()
+
+gv_data[,fctr.names] = sapply(gv_data[,fctr.names], as.character)
+
+gv_data[sapply(gv_data, function(x) as.character(x)=="")] = NA
+
+str(gv_data)
+```
+
+Removing variables and reclassifying some as factors
 ```{r}
 gv_clean = gv_data %>% 
   select(-c(address, incident_url:incident_url_fields_missing, location_description, notes, participant_name, sources)) %>% 
@@ -39,12 +53,15 @@ gv_clean = gv_data %>%
   mutate(year = as.factor(year),
          month = as.factor(month),
          day = as.numeric(day),
-         state = as.character(state),
-         city_or_county = as.character(city_or_county),
-         gun_stolen = as.character(gun_stolen),
-         gun_type = as.character(gun_type)
-         )
+         n_casualty = n_killed + n_injured)
+         
+str(gv_clean)
 
-head(gv_clean)
+summary(gv_clean)
+```
+
+
+```{r}
+
 ```
 
